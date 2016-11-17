@@ -1,0 +1,221 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>helpDialog</class>
+ <widget class="QDialog" name="helpDialog">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>601</width>
+    <height>410</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Dialog</string>
+  </property>
+  <layout class="QGridLayout" name="gridLayout">
+   <item row="0" column="0">
+    <widget class="QLabel" name="label">
+     <property name="text">
+      <string>Fenetre d'aide APPLICATION</string>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="0" colspan="2">
+    <widget class="QLineEdit" name="lineEdit"/>
+   </item>
+   <item row="2" column="2">
+    <widget class="QLineEdit" name="lineEdit_2"/>
+   </item>
+   <item row="3" column="0" colspan="2">
+    <widget class="QTreeWidget" name="treeWidget">
+     <property name="showDropIndicator" stdset="0">
+      <bool>true</bool>
+     </property>
+     <attribute name="headerShowSortIndicator" stdset="0">
+      <bool>false</bool>
+     </attribute>
+     <column>
+      <property name="text">
+       <string notr="true">Section</string>
+      </property>
+     </column>
+     <item>
+      <property name="text">
+       <string>Introduction</string>
+      </property>
+      <item>
+       <property name="text">
+        <string>Presentation</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>Informations Licence d'Exploitation</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>Contacts</string>
+       </property>
+       <item>
+        <property name="text">
+         <string>Clients</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Fournisseurs</string>
+        </property>
+       </item>
+      </item>
+      <item>
+       <property name="text">
+        <string>Work</string>
+       </property>
+       <item>
+        <property name="text">
+         <string>Services Proposés</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Devis</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Projets</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Factures</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Gestion Temps</string>
+        </property>
+       </item>
+      </item>
+      <item>
+       <property name="text">
+        <string>Charges</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>Comptabilité</string>
+       </property>
+      </item>
+     </item>
+     <item>
+      <property name="text">
+       <string>Vue d'Ensemble de APPLICATION</string>
+      </property>
+      <item>
+       <property name="text">
+        <string>Affichage</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>Fonctionalites</string>
+       </property>
+       <item>
+        <property name="text">
+         <string>Tableau de Bord</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Contacts</string>
+        </property>
+       </item>
+      </item>
+     </item>
+     <item>
+      <property name="text">
+       <string>Tuto Quick Start</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>Tuto Détaillé</string>
+      </property>
+     </item>
+    </widget>
+   </item>
+   <item row="3" column="2">
+    <widget class="QTextEdit" name="textEdit"/>
+   </item>
+   <item row="0" column="2">
+    <widget class="QLabel" name="label_2">
+     <property name="text">
+      <string>TextLabel</string>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="0" colspan="2">
+    <widget class="QLabel" name="label_3">
+     <property name="text">
+      <string>Index</string>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="2">
+    <widget class="QLabel" name="label_4">
+     <property name="text">
+      <string>Aide Detaillée</string>
+     </property>
+    </widget>
+   </item>
+   <item row="4" column="0" colspan="3">
+    <widget class="QDialogButtonBox" name="buttonBox">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+     <property name="standardButtons">
+      <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
+     </property>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections>
+  <connection>
+   <sender>buttonBox</sender>
+   <signal>accepted()</signal>
+   <receiver>helpDialog</receiver>
+   <slot>accept()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>248</x>
+     <y>254</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>157</x>
+     <y>274</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>buttonBox</sender>
+   <signal>rejected()</signal>
+   <receiver>helpDialog</receiver>
+   <slot>reject()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>316</x>
+     <y>260</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>286</x>
+     <y>274</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+</ui>

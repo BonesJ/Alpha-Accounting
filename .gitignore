@@ -45,3 +45,29 @@ $RECYCLE.BIN/
 Network Trash Folder
 Temporary Items
 .apdisk
+.texbuild/
+Alpha.db
+README-test.md
+SumatraPDF/
+aaa-update-billQdialog.bat
+api_boilerplate.pyc
+billQdialog.pyc
+billQdialog.ui
+client_secrets.json
+closure_table_test.py
+compiled_resources.pyc
+file_list_timestamped.json
+icons_rc.pyc
+img/
+my_database.db
+non-working/
+readme_task_organiser.py
+searchable_table.py
+sumatrapdfcache/
+testdbclosure.db
+theme-description-Alpha-0.1.0.txt
+treeselector.ui
+treeselector_.pyc
+treeselector_select.ui
+upload.pyc
+resources/closure

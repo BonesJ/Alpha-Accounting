@@ -1,0 +1,85 @@
+\documentclass[12pt,a4paper,french,]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[scaled]{helvet}
+\renewcommand\familydefault{\sfdefault} 
+\usepackage[T1]{fontenc}
+\usepackage{babel}
+\usepackage{amsmath}
+\usepackage{booktabs}% http://ctan.org/pkg/booktabs
+\newcommand{\tabitem}{~~\llap{\textbullet}~~}
+\usepackage{graphicx}
+\graphicspath{{img/}}
+\usepackage{amsfonts}
+\usepackage{float}
+\usepackage{amssymb}
+\usepackage{geometry}
+ \geometry{
+ a4paper,
+ total={170mm,257mm},
+ left=20mm,
+ top=10mm,
+ }
+
+\begin{document}
+%\section{Example}
+%An example document using \LaTeX, Python, and Jinja.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=.25\textwidth]{kiwilogo}
+\end{figure}
+\vspace*{20pt}
+
+\centering
+Code Facture:   \textbf{\VAR{numfac}} %\hfill 
+
+\vspace*{40pt}
+
+Client:  \textbf{\VAR{client_name}} \hfill \VAR{city} le: \textbf{\VAR{date_bill_creation}}
+
+\vspace*{20pt}
+
+\raggedright
+Produit: \textbf{\VAR{product}}
+
+\vspace*{20pt}
+
+\centering
+\begin{tabular}{lcrr}
+\toprule
+\multicolumn{1}{c}{\textbf{Désignation}} & \multicolumn{1}{c}{\textbf{Quantité}} & \multicolumn{1}{c}{\textbf{Prix Unitaire}} & \multicolumn{1}{c}{\textbf{Montant}} \\
+%\cmidrule(r){1-2}
+%\textbf{Désignation} & \textbf{Quantité} & \textbf{Prix Unitaire} & \textbf{Montant} \\
+\midrule
+% for loop stuff here to loop over all rows
+% to invoicein invoice items relevant
+%\BLOCK{ for key in inv_items }
+%  \item Counting: \VAR{key}
+%\BLOCK{ endfor }
+
+
+\textbf{Catégorie: \VAR{category}}:  &  &  & \\
+\quad Reportage photo + post production & $\VAR{qty}$ & DA $\VAR{unit_price}$ & DA $\VAR{total_price}$\\
+\bottomrule
+\end{tabular}
+\vspace*{20pt}
+
+\raggedright
+Arrêtée la présente facture à la somme de : \VAR{nap} Dinars
+Algériens TTC.
+
+\vspace*{20pt}
+\raggedleft
+Service Commercial
+
+\vfill
+\centering
+\small
+CB: BNP 027 00711 0000400 001 33 \\
+RC: 16/00-4944620A16 NIF: 188163200313165 \\
+Cite 100 Logements, batiment H etage 1, n3, 16003-Draria-ALGER \\
+Tel: +213 559 469 039 / 550 333 316\\
+E-mail: kiwistudioalg@gmail.com\\
+
+
+\end{document}

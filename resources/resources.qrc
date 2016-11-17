@@ -1,0 +1,58 @@
+<RCC>
+  <qresource prefix="resources">
+    <file>icons/Receipt-50.png</file>
+    <file>icons/Receipt Filled-50.png</file>
+    <file>icons/Invoice-50.png</file>
+    <file>icons/OK.png</file>
+    <file>icons/Add User Male Filled.png</file>
+    <file>icons/Add User Male.png</file>
+    <file>icons/Cancel Filled.png</file>
+    <file>icons/Cancel.png</file>
+    <file>icons/Checked Checkbox 2 Filled.png</file>
+    <file>icons/Checked Checkbox 2.png</file>
+    <file>icons/Checked Filled.png</file>
+    <file>icons/Checked.png</file>
+    <file>icons/Close Window Filled.png</file>
+    <file>icons/Close Window.png</file>
+    <file>icons/Cloud Checked Filled.png</file>
+    <file>icons/Cloud Checked.png</file>
+    <file>icons/Conference Background Selected Filled.png</file>
+    <file>icons/Conference Background Selected.png</file>
+    <file>icons/Conference Call Filled.png</file>
+    <file>icons/Conference Call.png</file>
+    <file>icons/Dizzy Person 2 Filled.png</file>
+    <file>icons/Dizzy Person 2.png</file>
+    <file>icons/Download from the Cloud Filled.png</file>
+    <file>icons/Download from the Cloud.png</file>
+    <file>icons/Edit User Male Filled.png</file>
+    <file>icons/Edit User Male.png</file>
+    <file>icons/Home Filled.png</file>
+    <file>icons/Home.png</file>
+    <file>icons/Invoice Filled.png</file>
+    <file>icons/Maximize Window Filled.png</file>
+    <file>icons/Maximize Window.png</file>
+    <file>icons/Message Filled.png</file>
+    <file>icons/Message.png</file>
+    <file>icons/Minimize Window Filled.png</file>
+    <file>icons/Minimize Window.png</file>
+    <file>icons/Plus Filled.png</file>
+    <file>icons/Plus.png</file>
+    <file>icons/Preview Pane Filled.png</file>
+    <file>icons/Preview Pane.png</file>
+    <file>icons/Purchase Order Filled.png</file>
+    <file>icons/Purchase Order.png</file>
+    <file>icons/Remove User Male Filled.png</file>
+    <file>icons/Remove User Male.png</file>
+    <file>icons/Restore Window Filled.png</file>
+    <file>icons/Restore Window.png</file>
+    <file>icons/Tax Filled.png</file>
+    <file>icons/Tax.png</file>
+    <file>icons/Test Partial Passed Filled.png</file>
+    <file>icons/Test Partial Passed.png</file>
+    <file>icons/Toggle Off Filled.png</file>
+    <file>icons/Toggle On Filled.png</file>
+    <file>icons/Upload to the Cloud.png</file>
+    <file>icons/User Filled.png</file>
+    <file>icons/User.png</file>
+  </qresource>
+</RCC>

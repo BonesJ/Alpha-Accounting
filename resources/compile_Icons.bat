@@ -1,0 +1,1 @@
+pyrcc4  resources.qrc -o icon_rc.py
