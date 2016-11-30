@@ -8,18 +8,18 @@ Readme for accounting software KIWI
 
 Abbreviations:
     -TBI: To be implemented. Refers to changes mentioned but unimplemented.
-    -GUI: Graphical user interface 
+    -GUI: Graphical user interface
     -PDF: Portable document format. File with a .pdf extension
     -VHP: Very High priority
     -NHP: Normal-High priority
     -NLP: Normal-Low priority
     -VLP: Very Low priority
 
-Welcome to `Alpha-0.1.1`, your everyday accounting software designed to help 
-small businesses and start-ups with little to no knowledge of accounting 
-practices. It is designed to keep track of your invoices, estimates, expenses, 
-taxes, clients, and cash-flow and display the information in a readable manner. 
-It will also generate documents based on the information provided such as 
+Welcome to `Alpha-0.1.1`, your everyday accounting software designed to help
+small businesses and start-ups with little to no knowledge of accounting
+practices. It is designed to keep track of your invoices, estimates, expenses,
+taxes, clients, and cash-flow and display the information in a readable manner.
+It will also generate documents based on the information provided such as
 estimates, invoices and tax returns.
 
 """TODO list format key:
@@ -28,59 +28,69 @@ estimates, invoices and tax returns.
     >> Issue resolution or Progress made`
 """
 
-TODO:    
-    -VHP Implement the tansitive closer sqlite3 virtual table to keep tack of product tree db in backend http://charlesleifer.com/blog/querying-tree-structures-in-sqlite-using-python-and-the-transitive-closure-extension/
-    -VHP Replace Treeview with tree-tuto.py so that widget is editable and 
+TODO:
+    -VHP Implement the tansitive closer sqlite3 virtual table to keep tack of product tree db in backend http://charlesleifer.com/blog/querying-tree-structures-in-sqlite-using-python-and-the-transitive-closure-extension
+        >> Implemented Closure table based of sql found on git. Missing some update and insert functionality.
+    -VHP Replace Treeview with tree-tuto.py so that widget is editable
+        >> Done but `name` field not chaning on Enter keypress event
     -VHP|Implement QTreeSelector ASAP.
-    
+        >> Done, see above.
+
     -VLP|Review GUI and theme to make it more appealing as now it isn't any good.
         >>  Currently in a dark theme w/ blue accents 2/2 said OK, needs tidying
-    
+
     -VHP|Implement bill function  and pdf generation.
         >>  Can produce latex .pdf, should implement table entry into invoice.
-            Work has progressed slowly because I am revising a fundamental 
+            Work has progressed slowly because I am revising a fundamental
             way of interacting with databases regarding job and bill creation.
-    
+
     -VLP|Implement `expenses` table and `CHARGES` tab.
-        >>  Lets finish `Factures` tab first yea ? 
-    
+        >>  Lets finish `Factures` tab first yea ?
+
     -VLP|Review `PANORAMA` tab to look better.
         >>  TBI
-    
+
     -VLP|Add `MO-GUN` functionality.
         >>  TBI
-    
+
     -VLP|Remove clutter from .css file
         >>  Removed some clutter but haven't really tried bare-boning it...
-    
+
     -NHP|Add a connection to my dropbox for database upload and license key.
         >>  Seems so far far ... far away....
-    
+
     -VHP|Add invoice items table
         >>  Done
-    
+
     -VHP|Add invoice link table
         >>  Done
-    
+
     -VHP|Add word document creation function
-        >>  Produces crude document. Prototyping stage 
-    
+        >>  Produces crude document. Prototyping stage
+
     -NHP|connect all da buttons !
         >>  Most all buttons are connected, spare a few...
-    
+
+    -VHP|Fix checkboxes `clients, projets, tous` that only display after `tous`
+        has been selected. Should show all by default and only show combobox
+        after user checks box `clients` or `projets`
+        >> TBI
+
     -NHP|Connect combobox for bill to update info depending on if it is a
          new bill, bill from job or bill from client.
-    
+        >> TBI
+
     -VLP|Write some sort of logging function that counts how many times a user
          uses a particular function or button I want to know exactly how they
          use the application so as to optimize it better.
+        >> TBI
 DONE:
 
 
 
 TABLE SUMMARY:
 
-        
+
 CREATE TABLE confirmed (
 key INTEGER PRIMARY KEY,
 client_id INTEGER,
@@ -101,7 +111,7 @@ CREATE TABLE client (
 "Factures_Payees" INTEGER(1),
 "Factures_Recues" INTEGER(1),
 "Email" VARCHAR(40),
-UNIQUE ("key") 
+UNIQUE ("key")
 
 
 CREATE TABLE job (
@@ -113,7 +123,7 @@ CREATE TABLE job (
 "Date_Fin" VARCHAR(10),
 "Prix" VARCHAR(30),
 "Somme_Payee" VARCHAR(30),
-UNIQUE ("key")    
+UNIQUE ("key")
 
 
 CREATE TABLE orders (

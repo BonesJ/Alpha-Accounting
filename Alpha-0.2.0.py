@@ -423,48 +423,49 @@ class MyWindow(QtGui.QMainWindow):
             #   check status of modif
             # Update records
 
-        def del_modif(num=None,btn=None, line=None, close=None, modif=None):
-            """Modification dock function to delete rows.
+        # def del_modif(num=None, btn=None, line=None, close=None, modif=None):
+        #     """Modification dock function to delete rows.
 
-            Deletes a row of a given modification for a given
-            job (or Projet). Clears databse table 'debrief' of rows.
+        #     Deletes a row of a given modification for a given
+        #     job (or Projet). Clears databse table 'debrief' of rows.
 
-            Args:
-                btn  (QCheckBox):  Delets widget.
-                line (QLineEdit):  Delets widget.
-                modif (tup ):      Read information (id and contents)
-            Returns:
-                True
-            """
-            #  Warning dialog
-            msg = QtGui.QMessageBox()
-            msg.setIcon(QtGui.QMessageBox.Warning)
-            msg.setText("Etes vous sur de vouloir supprimer cette modification ? Celle-ci sera definitivement efface de la memoire. Appuiyer sur 'Ok' pour continuer ou sur 'Cancel' pour annuler.")
-            # msg.setInformativeText("To edit a client you must select a row.")
-            msg.setWindowTitle("Delete")
-            msg.setStandardButtons(QtGui.QMessageBox.Ok | QtGui.QMessageBox.Cancel)
-            set_style(msg)
-            result = msg.exec_()
+        #     Args:
+        #         btn  (QCheckBox):  Delets widget.
+        #         line (QLineEdit):  Delets widget.
+        #         modif (tup ):      Read information (id and contents)
+        #     Returns:
+        #         True
+        #     """
+        #     #  Warning dialog
+        #     msg = QtGui.QMessageBox()
+        #     msg.setIcon(QtGui.QMessageBox.Warning)
+        #     msg.setText("Etes vous sur de vouloir supprimer cette modification ? Celle-ci sera definitivement efface de la memoire. Appuiyer sur 'Ok' pour continuer ou sur 'Cancel' pour annuler.")
+        #     # msg.setInformativeText("To edit a client you must select a row.")
+        #     msg.setWindowTitle("Delete")
+        #     msg.setStandardButtons(QtGui.QMessageBox.Ok | QtGui.QMessageBox.Cancel)
+        #     set_style(msg)
+        #     result = msg.exec_()
 
-            if result == QtGui.QMessageBox.Ok:
-                # Remove widget
-                widgets = [num, btn, line, close]
-                for widget in widgets:
-                    print "Removed", widget
-                    self.gridLayout_21.removeWidget(widget)
-                    widget.deleteLater()
-                    widget = None
+        #     if result == QtGui.QMessageBox.Ok:
+        #         # Remove widget
+        #         widgets = [num, btn, line, close]
+        #         for widget in widgets:
+        #             print "Removed", widget
+        #             self.gridLayout_21.removeWidget(widget)
+        #             widget.deleteLater()
+        #             widget = None
 
-                # Remove recod from db
-                connection = sqlite3.connect(DB)
-                cursor = connection.cursor()
-                cursor.execute("""
-                        DELETE FROM debrief
-                        WHERE "key" = "{id}" """.format(id=modif[0]))
+        #         # Remove recod from db
+        #         connection = sqlite3.connect(DB)
+        #         cursor = connection.cursor()
+        #         cursor.execute("""
+        #                 DELETE FROM debrief
+        #                 WHERE "key" = "{id}" """.format(id=modif[0]))
 
-                result_all = cursor.fetchall()
-                connection.commit()
-                connection.close()
+        #         result_all = cursor.fetchall()
+        #         connection.commit()
+        #         connection.close()
+        #         update_progressbar()
 
         def fetch_modif_items(parent=None):
             """Modification dock function for displaying edit boxes.
@@ -480,14 +481,17 @@ class MyWindow(QtGui.QMainWindow):
             Returns:
                 True
             """
-            def update_progressbar():
+            def update_progressbar(cb=None):
+                if cb is None:
+                    cb = checkboxes
+
                 # Add progress barr percentage
                 checked_items = 0
                 all_items = 0
 
-                for item in checkboxes:
+                for item in cb:
                     all_items += 1
-                    if checkboxes[item].isChecked():
+                    if cb[item].isChecked():
                         checked_items += 1
 
                 # print "checked_items", checked_items, "/", all_items
@@ -573,6 +577,67 @@ class MyWindow(QtGui.QMainWindow):
                     line.setReadOnly(False)
                     update_progressbar()
 
+            def textchanged(text):
+                print "txt changed: " + str(text)
+
+            def returnpressed():
+                txt = str(lines[id].text())
+                print "return pressed: " + txt
+                self.statusBar.showMessage("Sauvegarde dans base de donnees effectuee.", 4000)
+                connection = sqlite3.connect(DB)
+                cursor = connection.cursor()
+                cursor.execute("""
+                        UPDATE debrief set "Description" = "{text}"
+                        WHERE "key" = "{par_id}" """.format(text=txt, par_id=modif[0]))
+
+                result_all = cursor.fetchall()
+                connection.commit()
+                connection.close()
+
+            def del_modif(num=None, btn=None, line=None, close=None, modif=None):
+                """Modification dock function to delete rows.
+
+                Deletes a row of a given modification for a given
+                job (or Projet). Clears databse table 'debrief' of rows.
+
+                Args:
+                    btn  (QCheckBox):  Delets widget.
+                    line (QLineEdit):  Delets widget.
+                    modif (tup ):      Read information (id and contents)
+                Returns:
+                    True
+                """
+                #  Warning dialog
+                msg = QtGui.QMessageBox()
+                msg.setIcon(QtGui.QMessageBox.Warning)
+                msg.setText("Etes vous sur de vouloir supprimer cette modification ? Celle-ci sera definitivement efface de la memoire. Appuiyer sur 'Ok' pour continuer ou sur 'Cancel' pour annuler.")
+                # msg.setInformativeText("To edit a client you must select a row.")
+                msg.setWindowTitle("Delete")
+                msg.setStandardButtons(QtGui.QMessageBox.Ok | QtGui.QMessageBox.Cancel)
+                set_style(msg)
+                result = msg.exec_()
+
+                if result == QtGui.QMessageBox.Ok:
+                    # Remove widget
+                    widgets = [num, btn, line, close]
+                    for widget in widgets:
+                        print "Removed", widget
+                        self.gridLayout_21.removeWidget(widget)
+                        widget.deleteLater()
+                        widget = None
+
+                    # Remove recod from db
+                    connection = sqlite3.connect(DB)
+                    cursor = connection.cursor()
+                    cursor.execute("""
+                            DELETE FROM debrief
+                            WHERE "key" = "{id}" """.format(id=modif[0]))
+
+                    result_all = cursor.fetchall()
+                    connection.commit()
+                    connection.close()
+                    update_progressbar()
+
             # clear layout of previous widgets
             widgets = self.frame_7.children()
             # print "WIDGETS", widgets
@@ -633,6 +698,7 @@ class MyWindow(QtGui.QMainWindow):
                     checkboxes[id] = QtGui.QCheckBox()
 
                     lines[id] = QtGui.QLineEdit(desc)
+
                     closebuttons[id] = QtGui.QPushButton('X')
                     style_modif_close_btn(closebuttons[id])
 
@@ -653,10 +719,14 @@ class MyWindow(QtGui.QMainWindow):
                     checkboxes[id].toggled.connect(partial(checkbox_state,
                         btn=checkboxes[id], line=lines[id], modif=modif))
 
+                    # lines[id].textChanged.connect(textchanged)
+                    lines[id].returnPressed.connect(partial(returnpressed ))
+                    # URGENT: last created qlineedit is returned, implement
+                    # way of changing this to on focus or somethin...
+
                     closebuttons[id].clicked.connect(partial(del_modif,
                         num=numbering,btn=checkboxes[id], line=lines[id],
                         close=closebuttons[id], modif=modif))
-
 
                     # check db for "Date Done", if null leave checkbox unchecked,
                     # else make checkbox checked .setChecked(checked)
@@ -717,7 +787,7 @@ class MyWindow(QtGui.QMainWindow):
                 # now = now.replace(".", "-")
                 # print('Date now replaced: %s' % now)
 
-                description = 'Entrez votre debrief'
+                description = ''
                 date_initialised = now
                 date_completed = 'NULL'
 
@@ -766,6 +836,7 @@ class MyWindow(QtGui.QMainWindow):
             pass
 
         def minimise_main_window():
+            self.showNormal()
             self.showMinimized()
 
     # ===============================================APPLICATION INITIALISATION
@@ -776,7 +847,7 @@ class MyWindow(QtGui.QMainWindow):
         uic.loadUi('kiwi_UI.ui', self)
         change_theme()
 
-        label_copyright = QtGui.QLabel('Copyright P2 Labs. Algeria 2016')
+        label_copyright = QtGui.QLabel('Copyright C2 Labs. Algeria 2016')
 
         label_copyright.setStyleSheet(
             "QLabel { "
@@ -797,6 +868,28 @@ class MyWindow(QtGui.QMainWindow):
         self.actionLoad.triggered.connect(getfiles)
         self.actionQuitter_Application.triggered.connect(close_application)
         self.actionMinimiser_la_Fenetre.triggered.connect(minimise_main_window)
+
+        # Reimpement minimise nd maximize buttons
+        barRight = QtGui.QMenuBar()
+        # actionMin = QtGui.QAction('Test Action')
+        exitAction = QtGui.QAction(QtGui.QIcon('D:\Python Development\guidev\Alpha-Accounting\resources\icons\Close Window.png'), 'Exit', self)
+        exitAction.setShortcut('Ctrl+W')
+        exitAction.triggered.connect(QtGui.qApp.quit)
+
+        minimiseAction = QtGui.QAction('Minimiser', self)
+        minimiseAction.setShortcut('Ctrl+M')
+        minimiseAction.triggered.connect(minimise_main_window)
+
+
+        barRight.addAction(minimiseAction)
+        barRight.addAction(exitAction)
+        # rightMenuLayout = QtGui.QHBoxLayout()
+        # rightMenuLayout.addWidget(barRight)
+        # rightMenuLayout.setAlignment(QtCore.Qt.AlignRight)
+
+        self.menuBar.setCornerWidget(barRight)
+
+
     # ========================================================MODIFICATION DOCK
         self.btnAddModif.clicked.connect(add_modif_line)
 
@@ -1354,8 +1447,6 @@ def del_selected(tabview, model, table=None):
                 set_style(sel_msg)
                 sel_msg.exec_()
                 return
-
-
 
         # # UNCOMMENT SECTION FOR DEBUGGING /START/
         # print "result orders after deletion:"
@@ -2527,6 +2618,66 @@ def generate_latex(inv_data=None, doc=None, inv_items=None):
     else:
         print "Error in generate_latex(inv_data, doc, inv_items)"
 
+# experimental
+def read_tree_structure():
+    # read treedata from db
+
+    # need a function that maps sqlite table to  following lines
+    rootNode   = treeselector_.Node("Products")
+    childNode0 = treeselector_.Node("Services", rootNode)
+    childNode1 = treeselector_.Node("Photgraphy", childNode0)
+    childNode2 = treeselector_.Node("Rental", rootNode)
+    childNode3 = treeselector_.Node("LeftTibia", childNode2)
+    childNode4 = treeselector_.Node("LeftFoot", childNode3)
+    childNode5 = treeselector_.Node("LeftToe", childNode4)
+
+    # print rootNode
+    product_services_model = treeselector_.SceneGraphModel(rootNode)
+    tree_selector.productStructView.setModel(product_services_model)
+    tree = tree_selector.productStructView
+# /experimental
+
+
+
+# experimental
+def write_tree_structure():
+    cursor.execute("""
+    CREATE TABLE productservices (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    label VARCHAR,
+    parent_id VARCHAR,
+    );""")
+    connection.commit()
+
+    cursor.execute("""
+    CREATE TABLE closure (
+    key INTEGER PRIMARY KEY AUTOINCREMENT,
+    parent VARCHAR,
+    child VARCHAR,
+    depth VARCHAR,
+    FOREIGN KEY (Parent) REFERENCES productservices ("key")
+    );""")
+    connection.commit()
+
+
+    debrief_data = [
+                    (),
+                    (),
+                    (),
+                     ]
+
+    cursor.executemany("""
+        INSERT INTO debrief ("key","Description", [Date_Created], [Date_Done],
+                            "Parent")
+        VALUES(NULL,?,?,?,?)""", debrief_data)
+    connection.commit()
+
+    connection.close()
+# /experimental
+
+
+
+
 
 def init_tree_view(mode=None):
     """Function to initialise the treeView found in home window."""
@@ -2578,16 +2729,215 @@ def init_tree_view(mode=None):
         tree_selector = treeselector_.Ui_layoutWidget()
         print 'created selection tree only'
 
+
     # need a function that maps sqlite table to  following lines
-    rootNode   = treeselector_.Node("Products")
-    childNode0 = treeselector_.Node("Services", rootNode)
-    childNode1 = treeselector_.Node("Photgraphy", childNode0)
-    childNode2 = treeselector_.Node("Rental", rootNode)
-    childNode3 = treeselector_.Node("LeftTibia", childNode2)
-    childNode4 = treeselector_.Node("LeftFoot", childNode3)
-    childNode5 = treeselector_.Node("LeftToe", childNode4)
+    # EXPERIMENTAL=======================================================
+    # Read data from sqlite" databse
+    #  Working closure table sqlite3
+    connection = sqlite3.connect('closure-test.db')
+    cursor = connection.cursor()
+    print "Opened database successfully"
+
+    cursor.execute("""DROP TABLE IF EXISTS prefix_nodes ;""")
+    cursor.execute("""DROP TABLE IF EXISTS prefix_nodes_paths ;""")
+
+    cursor.execute("""
+      CREATE TABLE prefix_nodes (
+      'id' INTEGER PRIMARY KEY,
+      'parent_id' INTEGER  ,
+      'order' INTEGER  DEFAULT NULL,
+      'name' VARCHAR NOT NULL,
+      'is_deleted' INTEGER,
+      'rate_price' REAL DEFAULT NULL,
+      'flat_price' REAL DEFAULT NULL,
+      FOREIGN KEY ('parent_id') REFERENCES 'prefix_nodes' ('id') ON DELETE CASCADE
+      );""")
+
+    connection.commit()
+
+    cursor.execute("""
+      CREATE TABLE 'prefix_nodes_paths' (
+      'ancestor_id' INTEGER ,
+      'descendant_id' INTEGER KEY ,
+      'path_length' INTEGER ,
+      PRIMARY KEY ('ancestor_id','descendant_id'),
+
+      FOREIGN KEY ('ancestor_id')   REFERENCES 'prefix_nodes' ('id') ON DELETE CASCADE,
+      FOREIGN KEY ('descendant_id') REFERENCES 'prefix_nodes' ('id') ON DELETE CASCADE
+      );""")
+    connection.commit()
+
+    cursor.execute("""CREATE TRIGGER prefix_nodes_paths_log AFTER INSERT ON prefix_nodes
+        FOR EACH ROW
+        BEGIN
+        INSERT INTO `prefix_nodes_paths` (
+            `ancestor_id`,
+            `descendant_id`,
+            `path_length`
+        )
+        SELECT
+            `ancestor_id`,
+             NEW.`id`,
+            `path_length` + 1
+        FROM
+            `prefix_nodes_paths`
+        WHERE `descendant_id` = NEW.`parent_id`
+        UNION
+        ALL
+        SELECT
+            NEW.`id`,
+            NEW.`id`,
+            0 ;
+        END; """)
+    connection.commit()
+
+    cursor.execute("""INSERT INTO 'prefix_nodes' VALUES(1, 0, NULL, 'HOME',0, NULL, NULL);""")
+    cursor.execute("""INSERT INTO 'prefix_nodes' VALUES(2, 1, 1, 'PRODUCT',0,  NULL, NULL);""")
+    cursor.execute("""INSERT INTO 'prefix_nodes' VALUES(3, 1, 2, 'CONTACT',0,  NULL, NULL);""")
+    cursor.execute("""INSERT INTO 'prefix_nodes' VALUES(4, 1, 3, 'DOCUMENTATION',0,  NULL, NULL);""")
+    cursor.execute("""INSERT INTO 'prefix_nodes' VALUES(NULL, 2, 2, 'SOFTWARE',0,  NULL, NULL);""")
+    cursor.execute("""INSERT INTO 'prefix_nodes' VALUES(NULL, 2, 1, 'HARDWARE',0,  NULL, NULL);""")
+    cursor.execute("""INSERT INTO 'prefix_nodes' VALUES(NULL, 1, 3, 'DEMO',0,  NULL, NULL);""")
+    cursor.execute("""INSERT INTO 'prefix_nodes' VALUES(NULL, 4, 1, 'JAVA',0,  NULL, NULL);""")
+    cursor.execute("""INSERT INTO 'prefix_nodes' VALUES(NULL, 4, 2, 'PHP',0,  NULL, NULL);""")
+    cursor.execute("""INSERT INTO 'prefix_nodes' VALUES(NULL, NULL, NULL, 'Asia',0,  NULL, NULL);""")
+    cursor.execute("""INSERT INTO 'prefix_nodes' VALUES(NULL, 10, 1, 'China',0,  NULL, NULL);""")
+    cursor.execute("""INSERT INTO 'prefix_nodes' VALUES(NULL, 10, 2, 'Korea',0,  NULL, NULL);""")
+    cursor.execute("""INSERT INTO 'prefix_nodes' VALUES(NULL, 10, 3, 'Japan',0,  NULL, NULL);""")
+    cursor.execute("""INSERT INTO 'prefix_nodes' VALUES(NULL, 6, 3, 'CPU',0,  NULL, NULL);""")
+    cursor.execute("""INSERT INTO 'prefix_nodes' VALUES(NULL, 6, 4, 'HARD DISK',0,  NULL, NULL);""")
+    cursor.execute("""INSERT INTO 'prefix_nodes' VALUES(NULL, 15, 1, 'SSD',0,  NULL, NULL);""")
+    cursor.execute("""INSERT INTO 'prefix_nodes' VALUES(NULL, 15, 2, 'HDD',0,  NULL, NULL);""")
+    connection.commit()
+
+    cursor.execute("""SELECT * FROM prefix_nodes""")
+    result_all = cursor.fetchall()
+    # UNCOMMENT SECTION FOR DEBUGGING /START/
+    print "-" * 80
+    print "-" * 80
+    print("fetchall prefix_nodes:")
+    print "ID PArent_ID Order Name IsDeleted"
+    for r in result_all:
+        print(r)
+    # UNCOMMENT SECTION FOR DEBUGGING /END/
+
+
+    cursor.execute("""SELECT * FROM prefix_nodes_paths""")
+    result_all = cursor.fetchall()
+    # UNCOMMENT SECTION FOR DEBUGGING /START/
+    print "-" * 80
+    print "-" * 80
+    print("fetchall prefix_nodes_paths:")
+    print "Ancestor Descendant Depth"
+    for r in result_all:
+        print(r)
+    # UNCOMMENT SECTION FOR DEBUGGING /END/
+
+    # fetch subtree by ancestor_id
+    cursor.execute("""
+        SELECT
+            d.`id`,
+            d.`is_deleted`,
+            d.`parent_id`,
+            REPLACE(SUBSTR(quote(zeroblob((p.`path_length` + 1) / 2)), 3, p.`path_length`), '0', '-') || d.`name` AS tree,
+            p.`path_length`,
+            GROUP_CONCAT(
+                crumbs.`ancestor_id`
+            ) AS breadcrumbs
+        FROM
+            `prefix_nodes` AS d
+            JOIN `prefix_nodes_paths` AS p
+                ON d.`id` = p.`descendant_id`
+            JOIN `prefix_nodes_paths` AS crumbs
+                ON crumbs.`descendant_id` = p.`descendant_id`
+        WHERE  p.`ancestor_id` = '1' AND d.`is_deleted` = '0'
+        GROUP BY d.`id`
+        ORDER BY breadcrumbs ;""")
+    result_all = cursor.fetchall()
+
+    # UNCOMMENT SECTION FOR DEBUGGING /START/
+    print "-" * 80
+    print "-" * 80
+    print("Whole table:")
+    for r in result_all:
+        print(r)
+    # print result_all
+    connection.close()
+
+
+    print "Table created successfully"
+
+    # AS ITS STANDS IT CAN REA DATA FROM A DB AND PUT IT IN TREE VIEW BY CREATING NODE OBJECTS AND STORING THEM IN DICT.
+    # NEXT UP? WHEN WE ADD A NEW ITEM OR SUBITEM? DB SHOUD BE MODIFIED
+
+    # manipulate db and only reload treeview:
+    # read data from db
+    # map name to id in dict
+    # when new entry addednto tree model, update db
+
+    # uRGENT need to implement way of writing to database
+
+
+    # maps as follows
+    # childnode_data = {
+    #     id_1:(node_object, parent_1, name_1, depth_1, [list_of_family_1]),
+    #     id_2:(node_object, parent_2, name_2, depth_2, [list_of_family_2]),
+    #     ...
+    #     id_n:(node_object, parent_n, name_n, depth_n, [list_of_family_n])
+    # }
+
+    rootNode = treeselector_.Node("Home")
+
+    childnode_data = {'0':(rootNode, '0', '-1', 'root')}
+    print "root childnode_data dict:"
+    print childnode_data, "\n"
+    # print "Elements:"
+    # print childnode_data['0'][0],childnode_data['0'][1],childnode_data['0'][2],childnode_data['0'][3]
+    # Row factory
+    for row in result_all:
+         if row[0]  is not None:
+            id = str(row[0])
+            name = str(row[3])
+            parent_id = str(row[2])
+            depth = str(row[4])
+            list_of_family = [x.strip() for x in row[5].split(',')]
+            print " \nItem:"
+            print id, name, parent_id, depth, list_of_family, "\n"
+            print "Will be added to "
+            print "childnode_data dict:"
+            print childnode_data, "\n"
+            print
+            print "Verification step"
+            print "\t parent_id"
+            print "\t %r" % parent_id
+            # print "\t childnode_data[parent_id][0]"
+            # print childnode_data[parent_id][1]
+
+            node_object = treeselector_.Node(name, childnode_data[parent_id][0])
+
+
+
+            # print childnode_data[str(parent_id)]
+
+            # node_object = treeselector_.Node(name, childnode_data[parent_id][0])
+
+            childnode_data[id] = (node_object, parent_id, depth, list_of_family)
+
+
+    # EXPERIMENTAL=======================================================
+
+    # childNode0 = treeselector_.Node("Services", rootNode)
+    # childNode1 = treeselector_.Node("Photgraphy", childNode0)
+    # childNode2 = treeselector_.Node("Rental", rootNode)
+    # childNode3 = treeselector_.Node("LeftTibia", childNode2)
+    # childNode4 = treeselector_.Node("LeftFoot", childNode3)
+    # childNode5 = treeselector_.Node("LeftToe", childNode4)
 
     # print rootNode
+    print "root childnode_data dict:"
+    print childnode_data, "\n"
+
+
     product_services_model = treeselector_.SceneGraphModel(rootNode)
     tree_selector.productStructView.setModel(product_services_model)
     tree = tree_selector.productStructView
@@ -2766,12 +3116,22 @@ def del_node(tree=None):
 
 
 def add_node_item(tree=None):
-    index = tree.selectedIndexes()[0]
+    try:
+        index = tree.selectedIndexes()[0]
+    except IndexError:
+        rootNode = treeselector_.Node("Home")
+        index = tree.selectedIndexes()[0]
+
     print "index at item>>", str(index)
     tree.model().insertRow(index.row() + 1, parent=index.parent())
+    # node = tree.model.getNode(index)
+    # print "parent is", node
     # tree.model().insertRows(index.row()+1, 1, parent=index.parent())
 
     model = tree.model()
+    node = model.getNode(index)
+    print "parent is", node
+
     # data = []
     # rowCount = model.rowCount(index)
     # print "rowcount form tree:", rowCount
@@ -2785,19 +3145,20 @@ def add_node_item(tree=None):
     print "root_index is type():", type(root_index)
     print root_index
     print
-    print "root_index children:"
-    print "%r" % (root_index._children)
-    print
-    data2 = model.fetchData(root_index)
-    print "data2 is type():", type(data2)
-    print data2
+    # print "root_index children:"
+    # print "%r" % (root_index._children)
+    # print
+    # data2 = model.fetchData(root_index)
+    # print "data2 is type():", type(data2)
+    # print data2
 
 
 def add_node_subitem(tree=None):
     index = tree.selectedIndexes()[0]
-    print "index at subitem>>", index
+    print "index at subitem>>", index.row()
 
-    tree.model().insertRows(0, index.row()+1, parent=index)
+    tree.model().insertRows(0, index.row() + 1, parent=index)
+    # tree.model().insertRows(0, index.row()+1, parent=index)
     # tree.model().insertRows(index.row()+1, 1, parent=index)
 
     # index = tree.selectedIndexes()[0]
@@ -2806,20 +3167,40 @@ def add_node_subitem(tree=None):
 
 
 def edit_node(tree=None, value=None, col=None, window=None, model=None):
+    print "column >>", col
     if col == 0:
         price = window.doubleSpinBox_7.value()
 
     elif col == 1:
         price = window.doubleSpinBox_7.value()
+        column = "flat_price"
 
     elif col == 2:
         price = window.doubleSpinBox_8.value()
+        column = "rate_price"
 
     print
     print "price fetched from SpinBox>>", price
     print
 
     index = tree.selectedIndexes()[col]
+    node = tree.model().getNode(index)
+
+    table = "prefix_nodes"
+
+    data = price
+    row = node.name()
+    print table, column, data, row
+    connection = sqlite3.connect('closure-test.db')
+    cursor = connection.cursor()
+    print "Opened database successfully"
+    cursor.execute("""UPDATE "{tn}" SET "{col}" = "{data}" WHERE name = "{r}" """
+                           .format(tn=table, col=column, data=data, r=row))
+
+    connection.commit()
+    connection.close()
+
+
 
     print "in function edit_node"
     print " value>>", value

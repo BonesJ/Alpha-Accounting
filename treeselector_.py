@@ -123,9 +123,9 @@ class Node(object):
         if type(self._name) is not type("a"):
             self._name=self._name.toString()
             # print "entered"
-            # print "after>>", self._name
+            # print "after>>", self._name str(tabLevel) +
 
-        output += str(tabLevel) + self._name + "\n"
+        output += self._name #+ "\n"
 
         for child in self._children:
             output += child.log_level(tabLevel)
@@ -161,8 +161,8 @@ class Node(object):
     # def __repr__(self):
     #     return str(self.log())
 
-    def __repr__(self):
-        return str(self.log_level())
+    # def __repr__(self):
+    #     return str(self.log_level())
 
 
 class TransformNode(Node):
