@@ -72,3 +72,8 @@ treeselector_select.ui
 upload.pyc
 resources/closure
 closure-test.db
+demo.docx
+intermediate-texOutput.aux
+intermediate-texOutput.log
+jinja-test.tex
+kiwilogo.png

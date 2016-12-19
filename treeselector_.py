@@ -35,11 +35,12 @@ import icons_rc
 
 class Node(object):
 
-    def __init__(self, name, parent=None):
+    def __init__(self, name, id=None, parent=None, flat_price='', rate_price=''):
 
         self._name = name
-        self._flat_price = None
-        self._rate_price = None
+        self._id = id
+        self._flat_price = flat_price
+        self._rate_price = rate_price
 
         self._children = []
         self._parent = parent
@@ -73,6 +74,8 @@ class Node(object):
 
         return True
 
+    def id(self):
+        return self._id
 
     def name(self):
         return self._name
@@ -286,11 +289,11 @@ class SceneGraphModel(QtCore.QAbstractItemModel):
     def headerData(self, section, orientation, role):
         if role == QtCore.Qt.DisplayRole:
             if section == 0:
-                return "Services & Products"
+                return "Services & Produits"
             elif section == 1:
-                return "Flat rate"
+                return "Prix a la tache (D/unite)"
             elif section == 2:
-                return "Hourly rate"
+                return "Prix de l'heure (DA/h)"
 
 
     """INPUTS: QModelIndex"""
@@ -488,7 +491,7 @@ class Ui_(QtGui.QWidget):
         self.horizontalLayout.addLayout(self.verticalLayout_25)
         self.verticalLayout_8 = QtGui.QVBoxLayout(self.layoutWidget)
         self.verticalLayout_8.setObjectName(_fromUtf8("verticalLayout_8"))
-        self.radioButton_7 = QtGui.QRadioButton("Unit Price ($/unit)")
+        self.radioButton_7 = QtGui.QRadioButton("Prix a la tache (DA)")
         self.radioButton_7.setObjectName(_fromUtf8("radioButton_7"))
         self.verticalLayout_8.addWidget(self.radioButton_7)
         self.horizontalLayout_28 = QtGui.QHBoxLayout()
@@ -513,7 +516,7 @@ class Ui_(QtGui.QWidget):
         self.label_20.setAlignment(QtCore.Qt.AlignCenter)
         self.label_20.setObjectName(_fromUtf8("label_20"))
         self.verticalLayout_8.addWidget(self.label_20)
-        self.radioButton_8 = QtGui.QRadioButton("Rate ($/hr)")
+        self.radioButton_8 = QtGui.QRadioButton("Prix de l'heure (DA/h)")
         self.radioButton_8.setObjectName(_fromUtf8("radioButton_8"))
         self.verticalLayout_8.addWidget(self.radioButton_8)
         self.horizontalLayout_29 = QtGui.QHBoxLayout()
@@ -545,6 +548,39 @@ class Ui_(QtGui.QWidget):
         self.pushButton_14.setIconSize(QtCore.QSize(24,24))
 
         # self.pushButton_18.clicked.connect()
+
+    def keyPressEvent(self, e):
+
+        if e.key() == QtCore.Qt.Key_Return:
+            index = self.productStructView.selectedIndexes()[0]
+            print "Return pressed in Treeview, index is:", index
+            model = self.productStructView.model()
+            node = model.getNode(index)
+            print "type printed below:", type(node.name())
+            if type(node.name()) == type(QtCore.QVariant()):
+                print "Is not str, is QVariant, must convert..."
+                print "Converted Node is ", node.name().toString()
+                data = node.name().toString()
+            else:
+                print "Node is ", node.name()
+                print "id is ", node.id()
+                data = node.name()
+            # add sqlte3 update here
+            table = "prefix_nodes"
+            column = "name"
+            row = str(node.id())
+
+            import sqlite3
+            connection = sqlite3.connect(DB)
+            cursor = connection.cursor()
+            print "Opened database successfully"
+            cursor.execute("""UPDATE "{tn}" SET "{col}" = "{data}" WHERE id = "{r}" """
+                                   .format(tn=table, col=column, data=data, r=row))
+
+            connection.commit()
+            connection.close()
+
+            # self.statusBar.showMessage("Sauvegarde dans base de donnees effectuee !", 4000)
 
 
 class Ui_layoutWidget(QtGui.QWidget):
@@ -690,3 +726,9 @@ class Ui_layoutWidget(QtGui.QWidget):
         #     VALUES(NULL,?,?,?,?,?,?,?)""", staff_data)
         # connection.commit()
         # print "\n<<Successfully Created `PRODUCTS STRUCT` table>>\n"
+
+    def keyPressEvent(self, e):
+
+        if e.key() == QtCore.Qt.Key_Return:
+            print "Return pressed in Treeview, index is:", self.productStructView.selectedIndexes()[0]
+

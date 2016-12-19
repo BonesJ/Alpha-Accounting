@@ -179,27 +179,27 @@ class MyWindow(QtGui.QMainWindow):
                     combo.highlighted.disconnect()
                     combo.clear()
 
-            if b.text() == "Jobs":
-                # combo.setEnabled(True)
-                # combo.setMinimumWidth(150)
-                combo.addItem("<Select Job>")
+            # if b.text() == "Jobs":
+            #     # combo.setEnabled(True)
+            #     # combo.setMinimumWidth(150)
+            #     combo.addItem("<Select Job>")
 
-                if b.isChecked():
-                    # print b.text() + " is selected"
-                    update_combo_from_db(combo=combo,
-                                         column="Code Job",
-                                         table="job")
-                    args = partial(update_combo_from_db,
-                                   combo=combo,
-                                   column="Code Job",
-                                   table="job")
-                    combo.highlighted.connect(args)
-                else:
-                    # print b.text() + " is deselected"
-                    combo.highlighted.disconnect()
-                    combo.clear()
+            #     if b.isChecked():
+            #         # print b.text() + " is selected"
+            #         update_combo_from_db(combo=combo,
+            #                              column="Code Job",
+            #                              table="job")
+            #         args = partial(update_combo_from_db,
+            #                        combo=combo,
+            #                        column="Code Job",
+            #                        table="job")
+            #         combo.highlighted.connect(args)
+            #     else:
+            #         # print b.text() + " is deselected"
+            #         combo.highlighted.disconnect()
+            #         combo.clear()
 
-            if b.text() == "All":
+            if b.text() == "Tous":
                 combo.setMinimumWidth(0)
                 combo.setMaximumWidth(0)
                 combo.setEnabled(False)
@@ -889,7 +889,6 @@ class MyWindow(QtGui.QMainWindow):
 
         self.menuBar.setCornerWidget(barRight)
 
-
     # ========================================================MODIFICATION DOCK
         self.btnAddModif.clicked.connect(add_modif_line)
 
@@ -1038,6 +1037,7 @@ class MyWindow(QtGui.QMainWindow):
         y_w = self.offset.y()
         self.move(x - x_w, y - y_w)
 
+
 class MyModel(QtSql.QSqlTableModel):
     """Load model for DB manipulation using forms and QTableview."""
 
@@ -1128,7 +1128,7 @@ def make_db():
     # key data from first colmun `i[0]` in result_all through list compreh.
     # and store that  in result_cc (client code).
     # Could have used `SELECT key from client` but needded info for DEBUGGING
-    #
+
     cursor.execute("""SELECT * FROM client""")
     result_all = cursor.fetchall()
     # # UNCOMMENT SECTION FOR DEBUGGING /START/
@@ -1379,6 +1379,76 @@ def make_db():
         VALUES(NULL,?,?,?,?)""", debrief_data)
     connection.commit()
 
+    cursor.execute("""
+      CREATE TABLE prefix_nodes (
+      'id' INTEGER PRIMARY KEY,
+      'parent_id' INTEGER  ,
+      'order' REAL DEFAULT NULL,
+      'name' VARCHAR NOT NULL,
+      'is_deleted' REAL DEFAULT NULL,
+      'rate_price' REAL DEFAULT NULL,
+      'flat_price' REAL DEFAULT NULL,
+      FOREIGN KEY ('parent_id') REFERENCES 'prefix_nodes' ('id') ON DELETE CASCADE
+      );""")
+
+    connection.commit()
+    # PRIMARY KEY ('ancestor_id','descendant_id'),
+    cursor.execute("""
+      CREATE TABLE 'prefix_nodes_paths' (
+      'self_id' INTEGER PRIMARY KEY,
+      'ancestor_id' INTEGER ,
+      'descendant_id' INTEGER ,
+      'path_length' INTEGER ,
+
+      FOREIGN KEY ('ancestor_id')   REFERENCES 'prefix_nodes' ('id') ON DELETE CASCADE,
+      FOREIGN KEY ('descendant_id') REFERENCES 'prefix_nodes' ('id') ON DELETE CASCADE
+      );""")
+    connection.commit()
+
+    cursor.execute("""CREATE TRIGGER prefix_nodes_paths_log AFTER INSERT ON prefix_nodes
+        FOR EACH ROW
+        BEGIN
+        INSERT INTO `prefix_nodes_paths` (
+            `ancestor_id`,
+            `descendant_id`,
+            `path_length`
+        )
+        SELECT
+            `ancestor_id`,
+             NEW.`id`,
+            `path_length` + 1
+        FROM
+            `prefix_nodes_paths`
+        WHERE `descendant_id` = NEW.`parent_id`
+        UNION
+        ALL
+        SELECT
+            NEW.`id`,
+            NEW.`id`,
+            0 ;
+        END; """)
+    connection.commit()
+
+    cursor.execute("""INSERT INTO 'prefix_nodes' VALUES(NULL, 0, '', 'HOME','', NULL, NULL);""")
+    # cursor.execute("""INSERT INTO 'prefix_nodes' VALUES(NULL, 1, '', 'PRODUCT','',  NULL, NULL);""")
+    # cursor.execute("""INSERT INTO 'prefix_nodes' VALUES(NULL, 1, '', 'CONTACT','',  NULL, NULL);""")
+    # cursor.execute("""INSERT INTO 'prefix_nodes' VALUES(NULL, 1, '', 'DOCUMENTATION','',  NULL, NULL);""")
+    # cursor.execute("""INSERT INTO 'prefix_nodes' VALUES(NULL, 2, '', 'SOFTWARE','',  NULL, NULL);""")
+    # cursor.execute("""INSERT INTO 'prefix_nodes' VALUES(NULL, 2, '', 'HARDWARE','',  NULL, NULL);""")
+    # cursor.execute("""INSERT INTO 'prefix_nodes' VALUES(NULL, 1, '', 'DEMO','',  NULL, NULL);""")
+    # cursor.execute("""INSERT INTO 'prefix_nodes' VALUES(NULL, 4, '', 'JAVA','',  NULL, NULL);""")
+    # cursor.execute("""INSERT INTO 'prefix_nodes' VALUES(NULL, 4, '', 'PHP','',  NULL, NULL);""")
+    # cursor.execute("""INSERT INTO 'prefix_nodes' VALUES(NULL, NULL,'', 'Asia','',  NULL, NULL);""")
+    # cursor.execute("""INSERT INTO 'prefix_nodes' VALUES(NULL, 10, '', 'China','',  NULL, NULL);""")
+    # cursor.execute("""INSERT INTO 'prefix_nodes' VALUES(NULL, 10, '', 'Korea','',  NULL, NULL);""")
+    # cursor.execute("""INSERT INTO 'prefix_nodes' VALUES(NULL, 10, '', 'Japan','',  NULL, NULL);""")
+    # cursor.execute("""INSERT INTO 'prefix_nodes' VALUES(NULL, 6, '', 'CPU','',  NULL, NULL);""")
+    # cursor.execute("""INSERT INTO 'prefix_nodes' VALUES(NULL, 6, '', 'HARD DISK','',  NULL, NULL);""")
+    # cursor.execute("""INSERT INTO 'prefix_nodes' VALUES(NULL, 15, '', 'SSD','',  NULL, NULL);""")
+    # cursor.execute("""INSERT INTO 'prefix_nodes' VALUES(NULL, 15, '', 'HDD','',  NULL, NULL);""")
+
+    connection.commit()
+
     connection.close()
 
 
@@ -1421,10 +1491,6 @@ def del_selected(tabview, model, table=None):
                 # Delete link from orders table
                 connection = sqlite3.connect(DB)
                 cursor = connection.cursor()
-                # id_us =  "\"" + id_us + "\""
-                # cursor.execute("DELETE FROM orders WHERE Code Job = '%s';"
-                #                % (id_us.strip()))
-
                 cursor.execute("""
                         DELETE FROM orders
                         WHERE "client_id" = '%s' AND "job_id" = '%s' """ % (cid, jid))
@@ -1461,8 +1527,6 @@ def del_selected(tabview, model, table=None):
 
     else:
         print 'No.'
-    # warn.exec_()
-    # w.close()
 
 
 def update_combo_from_db(combo, column, table, displayfor=None):
@@ -1782,22 +1846,6 @@ def input_window(tab=None, model=None, combo=None, mode=None,
         else:
             raise NotImplementedError
 
-            # cursor.execute("""SELECT * FROM job""")
-            # result_all_jobs = cursor.fetchall()
-            # for i in result_cc:
-            #     # # UNCOMMENT SECTION FOR DEBUGGING /START/
-            #     # print "i=", i
-            #     # # UNCOMMENT SECTION FOR DEBUGGING /END/
-            #     count = "00000000" + str(i)  # +"\'"
-            #     count = count[-3:]
-            #     count = "\"" + count + "\""
-            #     # print "concatenated:", count
-            #     cursor.execute("""
-            #         UPDATE client SET "Code Client" = {s}
-            #         WHERE "key" = {k}""" .format(s=count, k=i))
-            #     # end of update cc
-            # connection.commit()
-
         connection.close()
         model.select()
 
@@ -1961,8 +2009,7 @@ def input_window(tab=None, model=None, combo=None, mode=None,
         height = 245 + 50 * len(fields)
     else:
         raise NotImplementedError
-    # win.setFixedHeight(height)
-    # win.setFixedWidth(400)
+
     win.exec_()
 
 
@@ -2221,20 +2268,13 @@ def new_bill_input_dialog(combo=None, table=None, model=None):
         table.model().select()
 
     def txtchanged(text, k=None):
-        # print "%s: " % (k.objectName())
+
         in_fields_2_data[k] = text
         in_fields_2_data_str[str(k.objectName())] = text
 
-        print "raw %r:" % str(k.objectName())
+        print "raw %r:" % str(k.objectName()), text
 
         in_fields_2_pLbls[k].setText(in_fields_2_data_str[str(k.objectName())])
-
-        # if k.objectName() == u'leClientName':
-        #     win.labelClient.setText(in_fields_2_data_str[str(k.objectName())])
-        #     print "!!!entered!!!"
-
-        # print "k.objectName() is type", type(k.objectName())
-        # print "saved data: ", in_fields_2_data[k]
 
     def datechanged(date, k=None):
         in_fields_2_data[k] = date
@@ -2268,15 +2308,22 @@ def new_bill_input_dialog(combo=None, table=None, model=None):
         print "END OF Invoice Preview:"
         print "=" * 80
 
-        generate_latex(inv_data=in_fields_2_data_str, doc="invoice")
+        success = generate_latex(inv_data=in_fields_2_data_str, doc="invoice")
+        if success:
+            print 'Generated LaTeX file correctly. Opening PDF...' + success
+        else:
+            print 'Did not generate LaTeX file correctly. Aborting...'
+
         import subprocess
-        # first = "C:/Users/Nuts/Desktop/Py/dev/kiwi/gui/"
-        # second = ".texbuild/jinja2build/jinja2-testOut.pdf"
-        # pdf = first + second
-        rel_pdf = ".texbuild/jinja2build/jinja2-testOut.pdf"
-        pdf = os.path.join(os.sep, os.path.dirname(__file__), rel_pdf)
-        acrobatPath = r'SumatraPDF/SumatraPDF.exe'
-        subprocess.Popen("%s %s" % (acrobatPath, pdf))
+
+        print "will open following pdf:"
+        # print rel_pdf
+        # print "file dir:"
+        # print os.getcwd()
+        # print "joined:"
+
+        acrobatPath = r'./SumatraPDF/SumatraPDF.exe'
+        subprocess.Popen("%s %s" % (acrobatPath, success))
 
     def preview_invoice_docx():
         print
@@ -2372,7 +2419,8 @@ def new_bill_input_dialog(combo=None, table=None, model=None):
     in_fields_2_pLbls = {win.leClientName: win.labelClient,
                          win.leNumBill: win.labelCodeFac,
                          win.leProduct: win.labelProduit,
-                         win.deCreationDate: win.labelDate}
+                         win.deCreationDate: win.labelDate,
+                         win.leCity: win.labelCity}
     # # UNCOMMENT SECTION FOR DEBUGGING /START/
     # print "-" * 60
     # print "Before Ok:"
@@ -2422,6 +2470,7 @@ def new_bill_input_dialog(combo=None, table=None, model=None):
     win.labelCodeFac.setText(in_fields_2_data_str["leNumBill"])
     win.labelProduit.setText(in_fields_2_data_str["leProduct"])
     win.labelDate.setText(str(in_fields_2_data_str["deCreationDate"]))
+    win.leCity.setText(str(in_fields_2_data_str["leCity"]))
 
     print "-" * 80
     print "Bill dialog closed with a",
@@ -2543,22 +2592,25 @@ def generate_latex(inv_data=None, doc=None, inv_items=None):
 
     if doc == "invoice":
         # Define variables...
-        project = "./"
+        build_d = "./.texbuild/jinja2build/"
+        abs_build_d = os.path.join(os.sep, os.getcwd(), build_d)
+        filename = "intermediate-texOutput"
 
-        build_d = "{}.texbuild/jinja2build/".format(project)
-        out_fil = "{}jinja2-testOut".format(build_d)
+        int_tex_file = filename + ".tex"
+        rel_int_tex_file = build_d + int_tex_file
+        abs_int_tex_file = os.path.join(os.sep, os.getcwd(), rel_int_tex_file)
+
+        pdf_file = filename + ".pdf"
+        rel_pdf_file = build_d + pdf_file
+        abs_pdf_file = os.path.join(os.sep, os.getcwd(), rel_pdf_file)
+
+        print "output dir:", build_d
+        print "intermediate file:", abs_int_tex_file
+
+
         template = latex_jinja_env.get_template('kiwi-invoice-template-1.tex')
 
-        # # user inputs hardcoded for testing (to delete afterwards...)
-        # numfac = 'FAC000-000'
-        # client_name = 'ALSTOM ALGERIE'
-        # city = 'Alger'
-        # date_bill_creation = '14/07/2016'
-        # product = 'Reportage Photo Constantine'
-        # nap = "Cent Quatre Vingt Sept Mille Deux Cent"
-        # category = "Couverture Evenement"
-        # qty = "1"
-        unit_price = "160000"
+        #  Business Logic
 
         # # user inputs using variables
         numfac = inv_data["leNumBill"]
@@ -2572,7 +2624,7 @@ def generate_latex(inv_data=None, doc=None, inv_items=None):
         unit_price = "160000"
 
         inv_items = {
-            "Category": "Couverture Evenement",
+            "Categorie": "Couverture Evenement",
             "Start_Date": "15/10/2016",
             "End_Date": "15/10/2016",
             "Description": "Suivi Evenement Bingo",
@@ -2591,7 +2643,6 @@ def generate_latex(inv_data=None, doc=None, inv_items=None):
         if not os.path.exists(build_d):
             os.makedirs(build_d)
 
-        # print(template.render(section1='Long Form', section2='Short Form'))
         tex_code = template.render(numfac=numfac,
                                    client_name=client_name,
                                    city=city,
@@ -2603,81 +2654,55 @@ def generate_latex(inv_data=None, doc=None, inv_items=None):
                                    total_price=numbers[1],
                                    product=product,
                                    inv_items=inv_items)
+        # print "tex_code", tex_code
         # saves tex_code to outpout file
-        with io.open(out_fil + ".tex", "w", encoding='utf8') as f:
+        print "Saved intermediate texfile"
+
+        # with io.open(out_fil + ".tex", "w", encoding='utf8') as f:
+        #     f.write(tex_code)
+
+        with io.open(abs_int_tex_file, "w", encoding='utf8') as f:
             f.write(tex_code)
 
-        os.system("pdflatex -output-directory {} {}".format(
-            os.path.realpath(build_d), os.path.realpath(out_fil)))
-        # shutil.copy2(out_fil+".pdf", os.path.dirname(
-        #                                os.path.realpath(tex_code)))
+        print "Will run the following .tex file:", abs_int_tex_file
+        # os.system("pdflatex {}".format(
+        #     os.path.realpath(rel_int_tex_file)))
+
+        import subprocess
+
+        # Run pdflatex on intermediate file
+        # This generates at least 3 documents namely *.log, *.aux, *.pdf
+        subprocess.check_call(['pdflatex', str(abs_int_tex_file)])
+
+        build_d = "./.texbuild/jinja2build/"
+        filename = "intermediate-texOutput"
+        filename += ".tex"
+        print "out dir", build_d
+        print "out file", filename
+
+        rel_int_tex_file = build_d + filename
+        abs_int_tex_file = os.path.join(os.sep, os.getcwd(), rel_int_tex_file)
+
+
+        # Move pdf to appropriate folder
+        import shutil
+
+        src = pdf_file
+        dst = rel_pdf_file
+
+        print "Moving"
+        print abs_pdf_file
+        print "to"
+        print abs_build_d
+        shutil.move(src,dst)
+
     elif doc == "estimate":
         raise NotImplementedError
     elif (doc is not None) and ((doc != "invoice") or (doc != "estimate")):
         print "Arg `%s` is invalid, please use `invoice or `estimate`." % doc
     else:
         print "Error in generate_latex(inv_data, doc, inv_items)"
-
-# experimental
-def read_tree_structure():
-    # read treedata from db
-
-    # need a function that maps sqlite table to  following lines
-    rootNode   = treeselector_.Node("Products")
-    childNode0 = treeselector_.Node("Services", rootNode)
-    childNode1 = treeselector_.Node("Photgraphy", childNode0)
-    childNode2 = treeselector_.Node("Rental", rootNode)
-    childNode3 = treeselector_.Node("LeftTibia", childNode2)
-    childNode4 = treeselector_.Node("LeftFoot", childNode3)
-    childNode5 = treeselector_.Node("LeftToe", childNode4)
-
-    # print rootNode
-    product_services_model = treeselector_.SceneGraphModel(rootNode)
-    tree_selector.productStructView.setModel(product_services_model)
-    tree = tree_selector.productStructView
-# /experimental
-
-
-
-# experimental
-def write_tree_structure():
-    cursor.execute("""
-    CREATE TABLE productservices (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    label VARCHAR,
-    parent_id VARCHAR,
-    );""")
-    connection.commit()
-
-    cursor.execute("""
-    CREATE TABLE closure (
-    key INTEGER PRIMARY KEY AUTOINCREMENT,
-    parent VARCHAR,
-    child VARCHAR,
-    depth VARCHAR,
-    FOREIGN KEY (Parent) REFERENCES productservices ("key")
-    );""")
-    connection.commit()
-
-
-    debrief_data = [
-                    (),
-                    (),
-                    (),
-                     ]
-
-    cursor.executemany("""
-        INSERT INTO debrief ("key","Description", [Date_Created], [Date_Done],
-                            "Parent")
-        VALUES(NULL,?,?,?,?)""", debrief_data)
-    connection.commit()
-
-    connection.close()
-# /experimental
-
-
-
-
+    return dst
 
 def init_tree_view(mode=None):
     """Function to initialise the treeView found in home window."""
@@ -2698,27 +2723,6 @@ def init_tree_view(mode=None):
     # print result
     if result is False:
         print "will create table here..."
-        # product structure tablee ...
-        # cursor.execute("""
-        #     CREATE TABLE product_structure (
-        #     key INTEGER PRIMARY KEY AUTOINCREMENT,
-        #     name VARCHAR(30),
-        #     flat_price REAL,
-        #     rate_price REAL,
-        #     parent_key INTEGER NULL REFERENCES product_structure (key)
-        #     ;""")
-    # # product structure tablee ...
-    # cursor.execute("""
-    #     CREATE TABLE client (
-    #     "key" INTEGER PRIMARY KEY AUTOINCREMENT,
-    #     "Code Client" VARCHAR(30),
-    #     "Nom" VARCHAR(30),
-    #     "Organisation" VARCHAR(30),
-    #     "Telephone" VARCHAR(30),
-    #     "Factures Payees" INTEGER(1),
-    #     "Factures Recues" INTEGER(1),
-    #     "Email" VARCHAR(40),
-    #     UNIQUE ("key") )
 
     reload(treeselector_)
 
@@ -2729,86 +2733,11 @@ def init_tree_view(mode=None):
         tree_selector = treeselector_.Ui_layoutWidget()
         print 'created selection tree only'
 
-
-    # need a function that maps sqlite table to  following lines
-    # EXPERIMENTAL=======================================================
     # Read data from sqlite" databse
     #  Working closure table sqlite3
-    connection = sqlite3.connect('closure-test.db')
+    connection = sqlite3.connect(DB)
     cursor = connection.cursor()
     print "Opened database successfully"
-
-    cursor.execute("""DROP TABLE IF EXISTS prefix_nodes ;""")
-    cursor.execute("""DROP TABLE IF EXISTS prefix_nodes_paths ;""")
-
-    cursor.execute("""
-      CREATE TABLE prefix_nodes (
-      'id' INTEGER PRIMARY KEY,
-      'parent_id' INTEGER  ,
-      'order' INTEGER  DEFAULT NULL,
-      'name' VARCHAR NOT NULL,
-      'is_deleted' INTEGER,
-      'rate_price' REAL DEFAULT NULL,
-      'flat_price' REAL DEFAULT NULL,
-      FOREIGN KEY ('parent_id') REFERENCES 'prefix_nodes' ('id') ON DELETE CASCADE
-      );""")
-
-    connection.commit()
-
-    cursor.execute("""
-      CREATE TABLE 'prefix_nodes_paths' (
-      'ancestor_id' INTEGER ,
-      'descendant_id' INTEGER KEY ,
-      'path_length' INTEGER ,
-      PRIMARY KEY ('ancestor_id','descendant_id'),
-
-      FOREIGN KEY ('ancestor_id')   REFERENCES 'prefix_nodes' ('id') ON DELETE CASCADE,
-      FOREIGN KEY ('descendant_id') REFERENCES 'prefix_nodes' ('id') ON DELETE CASCADE
-      );""")
-    connection.commit()
-
-    cursor.execute("""CREATE TRIGGER prefix_nodes_paths_log AFTER INSERT ON prefix_nodes
-        FOR EACH ROW
-        BEGIN
-        INSERT INTO `prefix_nodes_paths` (
-            `ancestor_id`,
-            `descendant_id`,
-            `path_length`
-        )
-        SELECT
-            `ancestor_id`,
-             NEW.`id`,
-            `path_length` + 1
-        FROM
-            `prefix_nodes_paths`
-        WHERE `descendant_id` = NEW.`parent_id`
-        UNION
-        ALL
-        SELECT
-            NEW.`id`,
-            NEW.`id`,
-            0 ;
-        END; """)
-    connection.commit()
-
-    cursor.execute("""INSERT INTO 'prefix_nodes' VALUES(1, 0, NULL, 'HOME',0, NULL, NULL);""")
-    cursor.execute("""INSERT INTO 'prefix_nodes' VALUES(2, 1, 1, 'PRODUCT',0,  NULL, NULL);""")
-    cursor.execute("""INSERT INTO 'prefix_nodes' VALUES(3, 1, 2, 'CONTACT',0,  NULL, NULL);""")
-    cursor.execute("""INSERT INTO 'prefix_nodes' VALUES(4, 1, 3, 'DOCUMENTATION',0,  NULL, NULL);""")
-    cursor.execute("""INSERT INTO 'prefix_nodes' VALUES(NULL, 2, 2, 'SOFTWARE',0,  NULL, NULL);""")
-    cursor.execute("""INSERT INTO 'prefix_nodes' VALUES(NULL, 2, 1, 'HARDWARE',0,  NULL, NULL);""")
-    cursor.execute("""INSERT INTO 'prefix_nodes' VALUES(NULL, 1, 3, 'DEMO',0,  NULL, NULL);""")
-    cursor.execute("""INSERT INTO 'prefix_nodes' VALUES(NULL, 4, 1, 'JAVA',0,  NULL, NULL);""")
-    cursor.execute("""INSERT INTO 'prefix_nodes' VALUES(NULL, 4, 2, 'PHP',0,  NULL, NULL);""")
-    cursor.execute("""INSERT INTO 'prefix_nodes' VALUES(NULL, NULL, NULL, 'Asia',0,  NULL, NULL);""")
-    cursor.execute("""INSERT INTO 'prefix_nodes' VALUES(NULL, 10, 1, 'China',0,  NULL, NULL);""")
-    cursor.execute("""INSERT INTO 'prefix_nodes' VALUES(NULL, 10, 2, 'Korea',0,  NULL, NULL);""")
-    cursor.execute("""INSERT INTO 'prefix_nodes' VALUES(NULL, 10, 3, 'Japan',0,  NULL, NULL);""")
-    cursor.execute("""INSERT INTO 'prefix_nodes' VALUES(NULL, 6, 3, 'CPU',0,  NULL, NULL);""")
-    cursor.execute("""INSERT INTO 'prefix_nodes' VALUES(NULL, 6, 4, 'HARD DISK',0,  NULL, NULL);""")
-    cursor.execute("""INSERT INTO 'prefix_nodes' VALUES(NULL, 15, 1, 'SSD',0,  NULL, NULL);""")
-    cursor.execute("""INSERT INTO 'prefix_nodes' VALUES(NULL, 15, 2, 'HDD',0,  NULL, NULL);""")
-    connection.commit()
 
     cursor.execute("""SELECT * FROM prefix_nodes""")
     result_all = cursor.fetchall()
@@ -2821,16 +2750,15 @@ def init_tree_view(mode=None):
         print(r)
     # UNCOMMENT SECTION FOR DEBUGGING /END/
 
-
     cursor.execute("""SELECT * FROM prefix_nodes_paths""")
     result_all = cursor.fetchall()
     # UNCOMMENT SECTION FOR DEBUGGING /START/
-    print "-" * 80
-    print "-" * 80
-    print("fetchall prefix_nodes_paths:")
-    print "Ancestor Descendant Depth"
-    for r in result_all:
-        print(r)
+    # print "-" * 80
+    # print "-" * 80
+    # print("fetchall prefix_nodes_paths:")
+    # print "Ancestor Descendant Depth"
+    # for r in result_all:
+    #     print(r)
     # UNCOMMENT SECTION FOR DEBUGGING /END/
 
     # fetch subtree by ancestor_id
@@ -2838,6 +2766,7 @@ def init_tree_view(mode=None):
         SELECT
             d.`id`,
             d.`is_deleted`,
+            d.`order`,
             d.`parent_id`,
             REPLACE(SUBSTR(quote(zeroblob((p.`path_length` + 1) / 2)), 3, p.`path_length`), '0', '-') || d.`name` AS tree,
             p.`path_length`,
@@ -2850,7 +2779,7 @@ def init_tree_view(mode=None):
                 ON d.`id` = p.`descendant_id`
             JOIN `prefix_nodes_paths` AS crumbs
                 ON crumbs.`descendant_id` = p.`descendant_id`
-        WHERE  p.`ancestor_id` = '1' AND d.`is_deleted` = '0'
+        WHERE  p.`ancestor_id` = '1'
         GROUP BY d.`id`
         ORDER BY breadcrumbs ;""")
     result_all = cursor.fetchall()
@@ -2867,79 +2796,43 @@ def init_tree_view(mode=None):
 
     print "Table created successfully"
 
-    # AS ITS STANDS IT CAN REA DATA FROM A DB AND PUT IT IN TREE VIEW BY CREATING NODE OBJECTS AND STORING THEM IN DICT.
-    # NEXT UP? WHEN WE ADD A NEW ITEM OR SUBITEM? DB SHOUD BE MODIFIED
-
     # manipulate db and only reload treeview:
     # read data from db
     # map name to id in dict
     # when new entry addednto tree model, update db
 
-    # uRGENT need to implement way of writing to database
-
-
     # maps as follows
     # childnode_data = {
-    #     id_1:(node_object, parent_1, name_1, depth_1, [list_of_family_1]),
-    #     id_2:(node_object, parent_2, name_2, depth_2, [list_of_family_2]),
+    #     id_1:(node_object, parent_1, name_1, depth_1, [list_of_family_1], flat_price, rate_price),
+    #     id_2:(node_object, parent_2, name_2, depth_2, [list_of_family_2], flat_price, rate_price),
     #     ...
-    #     id_n:(node_object, parent_n, name_n, depth_n, [list_of_family_n])
+    #     id_n:(node_object, parent_n, name_n, depth_n, [list_of_family_n], flat_price, rate_price)
     # }
 
-    rootNode = treeselector_.Node("Home")
+    rootNode = treeselector_.Node("Home", "0")
 
-    childnode_data = {'0':(rootNode, '0', '-1', 'root')}
-    print "root childnode_data dict:"
-    print childnode_data, "\n"
-    # print "Elements:"
-    # print childnode_data['0'][0],childnode_data['0'][1],childnode_data['0'][2],childnode_data['0'][3]
-    # Row factory
+    childnode_data = {'0': (rootNode, '0', '-1', 'root', '0', '0')}
+
+    # Node factory
     for row in result_all:
-         if row[0]  is not None:
+        if row[0] is not None:
             id = str(row[0])
-            name = str(row[3])
-            parent_id = str(row[2])
-            depth = str(row[4])
-            list_of_family = [x.strip() for x in row[5].split(',')]
-            print " \nItem:"
-            print id, name, parent_id, depth, list_of_family, "\n"
-            print "Will be added to "
-            print "childnode_data dict:"
-            print childnode_data, "\n"
-            print
-            print "Verification step"
-            print "\t parent_id"
-            print "\t %r" % parent_id
-            # print "\t childnode_data[parent_id][0]"
-            # print childnode_data[parent_id][1]
+            flat_price = str(row[1])
+            rate_price = str(row[2])
+            name = str(row[4])
+            parent_id = str(row[3])
+            depth = str(row[5])
+            list_of_family = [x.strip() for x in row[6].split(',')]
 
-            node_object = treeselector_.Node(name, childnode_data[parent_id][0])
-
-
-
+            node_object = treeselector_.Node(name, id, childnode_data[parent_id][0],flat_price, rate_price)
             # print childnode_data[str(parent_id)]
-
             # node_object = treeselector_.Node(name, childnode_data[parent_id][0])
-
-            childnode_data[id] = (node_object, parent_id, depth, list_of_family)
-
-
-    # EXPERIMENTAL=======================================================
-
-    # childNode0 = treeselector_.Node("Services", rootNode)
-    # childNode1 = treeselector_.Node("Photgraphy", childNode0)
-    # childNode2 = treeselector_.Node("Rental", rootNode)
-    # childNode3 = treeselector_.Node("LeftTibia", childNode2)
-    # childNode4 = treeselector_.Node("LeftFoot", childNode3)
-    # childNode5 = treeselector_.Node("LeftToe", childNode4)
-
-    # print rootNode
-    print "root childnode_data dict:"
-    print childnode_data, "\n"
-
+            childnode_data[id] = (node_object, flat_price, rate_price, parent_id, depth, list_of_family)
 
     product_services_model = treeselector_.SceneGraphModel(rootNode)
     tree_selector.productStructView.setModel(product_services_model)
+    tree_selector.productStructView.expandAll()
+
     tree = tree_selector.productStructView
 
     if mode == 'edit':
@@ -2965,6 +2858,75 @@ def init_tree_view(mode=None):
     return tree_selector
 
 
+def refresh_tree_view(tree):
+    print 'Will refresh tree view '
+    connection = sqlite3.connect(DB)
+    cursor = connection.cursor()
+    cursor.execute("""SELECT * FROM prefix_nodes""")
+    result_all = cursor.fetchall()
+    cursor.execute("""SELECT * FROM prefix_nodes_paths""")
+    result_all = cursor.fetchall()
+    cursor.execute("""
+        SELECT
+            d.`id`,
+            d.`is_deleted`,
+            d.`order`,
+            d.`parent_id`,
+            REPLACE(SUBSTR(quote(zeroblob((p.`path_length` + 1) / 2)), 3, p.`path_length`), '0', '-') || d.`name` AS tree,
+            p.`path_length`,
+            GROUP_CONCAT(
+                crumbs.`ancestor_id`
+            ) AS breadcrumbs
+        FROM
+            `prefix_nodes` AS d
+            JOIN `prefix_nodes_paths` AS p
+                ON d.`id` = p.`descendant_id`
+            JOIN `prefix_nodes_paths` AS crumbs
+                ON crumbs.`descendant_id` = p.`descendant_id`
+        WHERE  p.`ancestor_id` = '1'
+        GROUP BY d.`id`
+        ORDER BY breadcrumbs ;""")
+    result_all = cursor.fetchall()
+
+    connection.close()
+    rootNode = treeselector_.Node("Home", "0")
+
+    childnode_data = {'0':(rootNode, '0', '-1', 'root')}
+    # print "root childnode_data dict:"
+    # print childnode_data, "\n"
+    # print "Elements:"
+    # print childnode_data['0'][0],childnode_data['0'][1],childnode_data['0'][2],childnode_data['0'][3]
+    # Row factory
+    for row in result_all:
+         if row[0]  is not None:
+            id = str(row[0])
+            flat_price = str(row[1])
+            rate_price = str(row[2])
+            name = str(row[4])
+            parent_id = str(row[3])
+            depth = str(row[5])
+            list_of_family = [x.strip() for x in row[6].split(',')]
+            # print " \nItem:"
+            # print id, name, parent_id, depth, list_of_family, "\n"
+            # print "Will be added to "
+            # print "childnode_data dict:"
+            # print childnode_data, "\n"
+            # print
+            # print "Verification step"
+            # print "\t parent_id"
+            # print "\t %r" % parent_id
+            # print "\t childnode_data[parent_id][0]"
+            # print childnode_data[parent_id][1]
+
+            node_object = treeselector_.Node(name, id, childnode_data[parent_id][0],flat_price, rate_price)
+            childnode_data[id] = (node_object, flat_price, rate_price, parent_id, depth, list_of_family)
+
+    product_services_model = treeselector_.SceneGraphModel(rootNode)
+    tree.model().reset()
+    tree.setModel(product_services_model)
+    tree.expandAll()
+
+
 def add_to_db_v2(close_win=None, d=None, table=None):
     """Updated version of adding to the db using ars.
 
@@ -2976,8 +2938,7 @@ def add_to_db_v2(close_win=None, d=None, table=None):
 
     connection = sqlite3.connect(DB)
     cursor = connection.cursor()
-    # tup = [item for item in d if "NULL" in d[item]]
-    # print "check if there is a null: ", d[tup[0]]
+
     if table == "orders":
         cursor.execute("""INSERT INTO {tn} ("key") VALUES (NULL)""".
                        format(tn=table))
@@ -3075,36 +3036,6 @@ def update_db(close_win=None, d=None, table=None, row=None):
     else:
         print " need a table, a row number and a dict of columns and data !"
 
-    # cursor.execute("SELECT * FROM client")
-    # result_all = cursor.fetchall()
-    # print "-" * 80
-    # print "-" * 80
-    # print("fetchall before cc update:")
-    # for r in result_all:
-    #     print(r)
-    # result_cc = [i[0] for i in result_all]
-    # print "result_cc = ", result_cc
-    # for i in result_cc:
-    #     print "i=", i
-    #     count = "00000000" + str(i)  # +"\'"
-    #     count = count[-3:]
-
-    #     # count = "'" + count + "'"
-    #     print "concatenated:", count
-
-    #     cursor.execute(
-    #         """UPDATE client SET 'Code Client' = {s}
-    #            WHERE 'key' = {k}""" .format(s=count, k=i))
-
-    # connection.commit()
-    # cursor.execute("SELECT * FROM client")
-    # result_all = cursor.fetchall()
-    # print "-" * 80
-    # print "-" * 80
-    # print("fetchall after cc update:")
-    # for r in result_all:
-    #     print(r)
-
     close_win.close()
     print "\nExited update_db(): ----------------------"
 
@@ -3112,8 +3043,18 @@ def update_db(close_win=None, d=None, table=None, row=None):
 def del_node(tree=None):
     index = tree.selectedIndexes()[0]
     print "index>>", index
-    tree.model().removeRow(index.row(), parent=index.parent())
 
+    node = tree.model().getNode(index)
+    item_id = str(node.id())
+    print "item id:", item_id
+    connection = sqlite3.connect(DB)
+    cursor = connection.cursor()
+
+    cursor.execute(""" DELETE FROM prefix_nodes WHERE id = "{id}" ;""".format(id=item_id))
+
+    connection.commit()
+    connection.close()
+    tree.model().removeRow(index.row(), parent=index.parent())
 
 def add_node_item(tree=None):
     try:
@@ -3121,50 +3062,50 @@ def add_node_item(tree=None):
     except IndexError:
         rootNode = treeselector_.Node("Home")
         index = tree.selectedIndexes()[0]
-
-    print "index at item>>", str(index)
-    tree.model().insertRow(index.row() + 1, parent=index.parent())
-    # node = tree.model.getNode(index)
-    # print "parent is", node
-    # tree.model().insertRows(index.row()+1, 1, parent=index.parent())
-
+    node_parent = tree.model().getNode(index.parent())
+    tree.model().insertRows(0, 1, parent=index.parent())
     model = tree.model()
     node = model.getNode(index)
-    print "parent is", node
+    parent = str(node_parent.id())
+    order = ""
+    name = "Testing Sibling"
+    deleted = ""
 
-    # data = []
-    # rowCount = model.rowCount(index)
-    # print "rowcount form tree:", rowCount
-    # for row in range(model.recursiveRowCount(index)):
-    #     data.append([])
-    #     for column in range(model.columnCount(index)):
-    #         index = model.index(row, column)
-    #         data[row].append(str(model.data(index, QtCore.Qt.DisplayRole)))
-    # print "DATA EXTRACTED FROM TREE", data
-    root_index = model.getNode(index, root=True)
-    print "root_index is type():", type(root_index)
-    print root_index
-    print
-    # print "root_index children:"
-    # print "%r" % (root_index._children)
-    # print
-    # data2 = model.fetchData(root_index)
-    # print "data2 is type():", type(data2)
-    # print data2
+    # sqlite block
+    connection = sqlite3.connect(DB)
+    cursor = connection.cursor()
+    cursor.execute("""
+        INSERT INTO prefix_nodes ("id","parent_id", "order", "name",
+                            "is_deleted", "rate_price", "flat_price")
+        VALUES(NULL,"{par}","{ord}","{nm}","{deld}",NULL,NULL)""".format(
+        par=parent, ord=order, nm=name, deld=deleted))
 
+    connection.commit()
+    connection.close()
+    refresh_tree_view(tree)
 
 def add_node_subitem(tree=None):
     index = tree.selectedIndexes()[0]
     print "index at subitem>>", index.row()
+    tree.model().insertRows(0, 1, parent=index)
 
-    tree.model().insertRows(0, index.row() + 1, parent=index)
-    # tree.model().insertRows(0, index.row()+1, parent=index)
-    # tree.model().insertRows(index.row()+1, 1, parent=index)
+    node_parent = tree.model().getNode(index)
+    parent = str(node_parent.id())
+    order = ""  # represents rate price
+    name = "Testing Child"
+    deleted = ""  # represents flat price
 
-    # index = tree.selectedIndexes()[0]
-    # print "index>>", index
-    # tree.model().removeRow(index.row(), parent=index.parent())
+    connection = sqlite3.connect(DB)
+    cursor = connection.cursor()
+    cursor.execute("""
+        INSERT INTO prefix_nodes ("id","parent_id", "order", "name",
+                            "is_deleted", "rate_price", "flat_price")
+        VALUES(NULL,"{par}","{ord}","{nm}","{deld}",NULL,NULL)""".format(
+        par=parent, ord=order, nm=name, deld=deleted))
 
+    connection.commit()
+    connection.close()
+    refresh_tree_view(tree)
 
 def edit_node(tree=None, value=None, col=None, window=None, model=None):
     print "column >>", col
@@ -3174,52 +3115,54 @@ def edit_node(tree=None, value=None, col=None, window=None, model=None):
     elif col == 1:
         price = window.doubleSpinBox_7.value()
         column = "flat_price"
+        column = "is_deleted"
 
     elif col == 2:
         price = window.doubleSpinBox_8.value()
         column = "rate_price"
+        column = "order"
 
-    print
-    print "price fetched from SpinBox>>", price
-    print
+    try:
+        index = tree.selectedIndexes()[col]
+    except (IndexError):
+        sel_msg = QtGui.QMessageBox()
+        sel_msg.setIcon(QtGui.QMessageBox.Information)
 
-    index = tree.selectedIndexes()[col]
+        sel_msg.setText("Oops! Erreur de Selection:")
+        sel_msg.setInformativeText("Pour modifier le prix d'un service il faut le selectionner d'abord.")
+        sel_msg.setWindowTitle("Input Error")
+
+        sel_msg.setStandardButtons(QtGui.QMessageBox.Ok |
+                               QtGui.QMessageBox.Cancel)
+        set_style(sel_msg)
+        sel_msg.exec_()
+        return
+
     node = tree.model().getNode(index)
-
+    id = str(node.id())
     table = "prefix_nodes"
-
     data = price
-    row = node.name()
-    print table, column, data, row
-    connection = sqlite3.connect('closure-test.db')
+    # print table, column, data, id
+    tree.model().setData(index, price)
+    connection = sqlite3.connect(DB)
     cursor = connection.cursor()
-    print "Opened database successfully"
-    cursor.execute("""UPDATE "{tn}" SET "{col}" = "{data}" WHERE name = "{r}" """
-                           .format(tn=table, col=column, data=data, r=row))
+
+    cursor.execute("""UPDATE "{tn}" SET "{col}" = "{data}" WHERE id = "{id}" """
+                           .format(tn=table, col=column, data=data, id=id))
 
     connection.commit()
     connection.close()
 
-
-
-    print "in function edit_node"
-    print " value>>", value
-    # index.column() = col
-    print "index column>>", index.column()
-
-    tree.model().setData(index, price)
-    tree.setVisible(False)
-    tree.setVisible(True)
+    refresh_tree_view(tree)
 
 
 def tabView_sel_changed(tabview=None):
     index = tabview.selectedIndexes()[0]
     print('Row %d is selected' % index.row())
     list_of_indices = tabview.selectedIndexes()
-    # print "Lst of indices:", list_of_indices
+
     list_of_data = []
     for index in sorted(list_of_indices):
-
         # print "Column ", index.column()
         data = str(tabview.model().data(index).toString())
         # print "Data :", data
